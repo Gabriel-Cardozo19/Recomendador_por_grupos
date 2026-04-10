@@ -41,9 +41,10 @@ st.markdown(
         border-radius: 14px;
         padding: 14px;
         margin-bottom: 12px;
+        min-height: 120px;
     }
     .card-title {
-        font-size: 1.15rem;
+        font-size: 1.05rem;
         font-weight: 700;
         color: #102A43;
         margin-bottom: 8px;
@@ -51,12 +52,6 @@ st.markdown(
     .card-text {
         color: #486581;
         font-size: 0.95rem;
-    }
-    .section-title {
-        font-size: 1.2rem;
-        font-weight: 700;
-        color: #102A43;
-        margin-top: 0.6rem;
     }
     </style>
     """,
@@ -98,36 +93,18 @@ logo_path = os.path.join(base_dir, "app", "logo.png")
 # Diccionarios de negocio
 # -----------------------------------
 descripciones = {
-    "Hogar": "Concentra productos vinculados al hogar, decoración y confort, con fuerte potencial para impulsar compras complementarias.",
-    "Recreación": "Agrupa categorías asociadas a familia, mascotas y estilo de vida recreativo.",
-    "Tecnología": "Integra categorías vinculadas a electrónica, dispositivos y accesorios tecnológicos.",
-    "Cuidado Personal": "Reúne productos de bienestar, higiene y consumo personal.",
-    "Moda": "Incluye categorías orientadas a accesorios, estilo y consumo personal.",
-    "Automotor": "Agrupa productos asociados al uso y mantenimiento del vehículo.",
-    "Viaje y accesorios": "Concentra productos vinculados a movilidad, equipaje y viaje.",
-    "Industria y construcción": "Incluye herramientas y productos de uso más técnico o funcional.",
-    "Cultura y entretenimiento": "Agrupa productos de lectura, música y ocio.",
-    "Alimentos": "Concentra productos de consumo alimenticio.",
-    "Marketplace": "Grupo con menor participación relativa dentro del catálogo general.",
-    "other": "Grupo residual con menor volumen histórico y relaciones menos estables."
-}
-
-aplicaciones = {
-    "Hogar": [
-        "Bundles con productos complementarios",
-        "Recomendaciones cruzadas en carrito o checkout",
-        "Campañas orientadas a aumentar ticket promedio"
-    ],
-    "Recreación": [
-        "Promociones cruzadas por afinidad de estilo de vida",
-        "Sugerencias contextuales en navegación",
-        "Combos orientados a consumo familiar"
-    ],
-    "Tecnología": [
-        "Cross-selling de accesorios y periféricos",
-        "Ofertas complementarias post-compra",
-        "Recomendaciones de upgrade tecnológico"
-    ]
+    "Hogar": "Productos vinculados al hogar, decoración y confort, con potencial para compras complementarias.",
+    "Recreación": "Categorías asociadas a familia, mascotas y estilo de vida recreativo.",
+    "Tecnología": "Productos relacionados con electrónica, dispositivos y accesorios tecnológicos.",
+    "Cuidado Personal": "Categorías de bienestar, higiene y consumo personal.",
+    "Moda": "Productos vinculados a estilo, accesorios y consumo personal.",
+    "Automotor": "Productos y accesorios asociados al vehículo.",
+    "Viaje y accesorios": "Categorías vinculadas a movilidad, equipaje y viaje.",
+    "Industria y construcción": "Herramientas y productos de uso técnico o funcional.",
+    "Cultura y entretenimiento": "Categorías de lectura, música y ocio.",
+    "Alimentos": "Productos de consumo alimenticio.",
+    "Marketplace": "Grupo con menor participación relativa dentro del catálogo.",
+    "other": "Grupo residual con menor volumen histórico."
 }
 
 # -----------------------------------
@@ -143,16 +120,16 @@ def obtener_top_recomendaciones(grupo, top_k=5):
 
 def mensaje_potencial(score_promedio):
     if score_promedio >= 0.60:
-        return "Alto potencial comercial", "success"
+        return "Alta oportunidad comercial", "success"
     elif score_promedio >= 0.30:
-        return "Potencial comercial medio", "info"
+        return "Oportunidad comercial media", "info"
     else:
-        return "Potencial comercial acotado", "warning"
+        return "Oportunidad comercial acotada", "warning"
 
 def insight_negocio(grupo_origen, grupo_recomendado):
     return (
-        f"Los clientes que compran en **{grupo_origen}** también muestran afinidad con **{grupo_recomendado}**, "
-        f"lo que sugiere una oportunidad de venta cruzada relevante para recomendaciones comerciales, bundles o campañas específicas."
+        f"Los clientes que compran en {grupo_origen} también tienden a comprar en {grupo_recomendado}, "
+        "lo que representa una oportunidad directa para aumentar el ticket promedio mediante cross-selling."
     )
 
 def comparacion_promedio(df_total, df_grupo):
@@ -160,11 +137,11 @@ def comparacion_promedio(df_total, df_grupo):
     promedio_grupo = df_grupo[col_score].mean() if not df_grupo.empty else 0
 
     if promedio_grupo > promedio_catalogo:
-        return f"La fuerza de relación de este grupo se encuentra **por encima del promedio general del catálogo** ({promedio_catalogo:.3f})."
+        return f"La fuerza de relación está por encima del promedio general del catálogo ({promedio_catalogo:.3f})."
     elif promedio_grupo < promedio_catalogo:
-        return f"La fuerza de relación de este grupo se encuentra **por debajo del promedio general del catálogo** ({promedio_catalogo:.3f})."
+        return f"La fuerza de relación está por debajo del promedio general del catálogo ({promedio_catalogo:.3f})."
     else:
-        return f"La fuerza de relación de este grupo se encuentra alineada con el promedio general del catálogo ({promedio_catalogo:.3f})."
+        return f"La fuerza de relación se encuentra alineada con el promedio general del catálogo ({promedio_catalogo:.3f})."
 
 def fallback_popularidad(df, top_n=5):
     return (
@@ -179,8 +156,32 @@ def fallback_popularidad(df, top_n=5):
         })
     )
 
+def acciones_comerciales(grupo):
+    base = {
+        "Hogar": [
+            ("🛒 Bundles", "Combinar productos complementarios para aumentar ticket."),
+            ("🎯 Checkout", "Sugerencias cruzadas al momento de compra."),
+            ("📢 Campañas", "Promociones enfocadas en consumo complementario.")
+        ],
+        "Tecnología": [
+            ("🔌 Accesorios", "Impulsar ventas cruzadas de productos complementarios."),
+            ("🎯 Upselling", "Sugerencias vinculadas a mejoras o extensiones de compra."),
+            ("📢 Remarketing", "Campañas sobre categorías afines al interés del cliente.")
+        ],
+        "Recreación": [
+            ("🎁 Combos", "Armar propuestas agrupadas para consumo recreativo."),
+            ("🛍️ Checkout", "Sugerir compras adicionales por afinidad."),
+            ("📢 Segmentación", "Campañas según estilo de vida y comportamiento.")
+        ]
+    }
+    return base.get(grupo, [
+        ("🛒 Bundles", "Probar combinaciones comerciales entre grupos relacionados."),
+        ("🎯 Checkout", "Usar sugerencias cruzadas durante la compra."),
+        ("📢 Campañas", "Activar promociones segmentadas por afinidad.")
+    ])
+
 # -----------------------------------
-# Header con logo
+# Header
 # -----------------------------------
 logo_col, title_col = st.columns([1, 6])
 
@@ -218,7 +219,7 @@ if st.sidebar.button("Generar recomendación"):
 df_grupo = obtener_top_recomendaciones(grupo_seleccionado, top_k=top_k)
 
 # -----------------------------------
-# Métricas principales
+# Métricas superiores
 # -----------------------------------
 metric1, metric2, metric3 = st.columns(3)
 
@@ -319,21 +320,32 @@ with left:
 
 with right:
     st.markdown("### Aplicación comercial")
-    acciones = aplicaciones.get(grupo_seleccionado, [
-        "Activar recomendaciones cruzadas en navegación",
-        "Probar bundles comerciales entre grupos relacionados",
-        "Usar estas relaciones para campañas segmentadas"
-    ])
-    for accion in acciones:
-        st.write(f"- {accion}")
+    acciones = acciones_comerciales(grupo_seleccionado)
+
+    cols_acciones = st.columns(3)
+    for col, (titulo, desc) in zip(cols_acciones, acciones):
+        with col:
+            st.markdown(
+                f"""
+                <div class="small-card">
+                    <div class="card-title">{titulo}</div>
+                    <div class="card-text">{desc}</div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
 # -----------------------------------
 # Por qué esta relación importa
 # -----------------------------------
 st.markdown("### ¿Por qué esta relación importa?")
 if not df_grupo.empty:
-    st.write(insight_negocio(grupo_seleccionado, df_grupo.iloc[0][col_reco]))
-    st.write(comparacion_promedio(recomendaciones, df_grupo))
+    st.success(insight_negocio(grupo_seleccionado, df_grupo.iloc[0][col_reco]))
+    st.info(comparacion_promedio(recomendaciones, df_grupo))
+
+    score_promedio = df_grupo[col_score].mean()
+    st.markdown("### Nivel de oportunidad")
+    st.progress(min(max(float(score_promedio), 0.0), 1.0))
 
 # -----------------------------------
 # Fallback si no hay recomendaciones
@@ -347,7 +359,7 @@ if df_grupo.empty:
     st.dataframe(fallback, use_container_width=True)
 
 # -----------------------------------
-# Cierre de negocio
+# Cierre
 # -----------------------------------
 st.markdown("---")
 colA, colB = st.columns(2)
@@ -358,8 +370,8 @@ with colA:
         """
         Permite transformar datos históricos en oportunidades concretas de cross-selling, ayudando a:
         - identificar combinaciones con mayor potencial comercial
-        - priorizar acciones para aumentar ticket promedio
-        - sostener decisiones de recomendación con evidencia del comportamiento de compra
+        - priorizar acciones para aumentar el ticket promedio
+        - sostener decisiones de recomendación con evidencia de compra
         """
     )
 
@@ -368,11 +380,11 @@ with colB:
     st.write(
         """
         Como evolución del proyecto, el sistema puede avanzar hacia:
-        - mayor granularidad en las recomendaciones
-        - recomendaciones más personalizadas
+        - recomendaciones más granulares
+        - mayor nivel de personalización
         - integración con otras capas de activación comercial
         """
     )
 
 st.markdown("---")
-st.caption("Proyecto Webshop · Sprint 2 ·")
+st.caption("Proyecto Webshop · Sprint 2 ")
