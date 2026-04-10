@@ -6,7 +6,7 @@ import streamlit as st
 # Configuración general
 # -----------------------------------
 st.set_page_config(
-    page_title="Webshop | Cross-Selling",
+    page_title="Webshop | Cross-Selling Intelligence",
     page_icon="🛒",
     layout="wide"
 )
@@ -18,58 +18,62 @@ st.markdown(
     """
     <style>
     .main-title {
-        font-size: 2.6rem;
+        font-size: 2.5rem;
         font-weight: 800;
+        color: #16325B;
         margin-bottom: 0.2rem;
-        color: #2563EB;
     }
     .subtitle {
-        font-size: 1.05rem;
-        color: #94A3B8;
-        margin-bottom: 1.4rem;
+        font-size: 1rem;
+        color: #4F709C;
+        margin-bottom: 1rem;
     }
     .section-title {
-        font-size: 1.7rem;
-        font-weight: 800;
+        font-size: 1.3rem;
+        font-weight: 700;
         color: #F8FAFC;
         margin-top: 1rem;
         margin-bottom: 0.8rem;
     }
+    .big-card {
+        background: linear-gradient(135deg, #EAF2FF, #F8FAFC);
+        border: 1px solid #D9E2EC;
+        border-radius: 18px;
+        padding: 20px;
+        margin-bottom: 18px;
+        color: #102A43 !important;
+    }
+    .big-card p, .big-card div, .big-card span, .big-card b {
+        color: #102A43 !important;
+    }
     .card {
         background-color: #F8FAFC;
         border: 1px solid #E2E8F0;
-        border-radius: 18px;
-        padding: 18px;
-        margin-bottom: 14px;
-        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
-        min-height: 190px;
-    }
-    .card h4 {
-        margin: 0 0 10px 0;
-        color: #0F172A;
-        font-size: 1.25rem;
-        font-weight: 700;
-    }
-    .card p {
-        margin: 6px 0;
-        color: #334155;
-        font-size: 0.98rem;
-    }
-    .insight-box {
-        background-color: #ECFDF5;
-        border-left: 6px solid #10B981;
+        border-radius: 16px;
         padding: 16px;
-        border-radius: 12px;
-        color: #065F46;
-        font-size: 1rem;
-        margin-bottom: 14px;
+        margin-bottom: 12px;
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
+        min-height: 165px;
+        color: #102A43 !important;
+    }
+    .card h4, .card p, .card div, .card span, .card b {
+        color: #102A43 !important;
     }
     .info-box {
         background-color: #EFF6FF;
         border-left: 6px solid #2563EB;
         padding: 16px;
         border-radius: 12px;
-        color: #1E3A8A;
+        color: #1E3A8A !important;
+        font-size: 1rem;
+        margin-bottom: 14px;
+    }
+    .insight-box {
+        background-color: #ECFDF5;
+        border-left: 6px solid #10B981;
+        padding: 16px;
+        border-radius: 12px;
+        color: #065F46 !important;
         font-size: 1rem;
         margin-bottom: 14px;
     }
@@ -78,25 +82,9 @@ st.markdown(
         border-left: 6px solid #CA8A04;
         padding: 16px;
         border-radius: 12px;
-        color: #854D0E;
+        color: #854D0E !important;
         font-size: 1rem;
         margin-bottom: 14px;
-    }
-    .action-card {
-        background-color: #F8FAFC;
-        border: 1px solid #E2E8F0;
-        border-radius: 18px;
-        padding: 16px;
-        min-height: 170px;
-    }
-    .action-card h4 {
-        color: #334155;
-        margin-bottom: 10px;
-        font-size: 1.2rem;
-    }
-    .action-card p {
-        color: #64748B;
-        font-size: 0.98rem;
     }
     </style>
     """,
@@ -120,13 +108,18 @@ def load_data():
 recomendaciones = load_data()
 
 # -----------------------------------
-# Columnas del dataset
+# Columnas reales
 # -----------------------------------
 col_origen = "grupo_a"
 col_reco = "grupo_b"
 col_score = "score"
 col_freq = "frecuencia"
 col_ticket = "ticket_grupo_b"
+
+# -----------------------------------
+# Logo
+# -----------------------------------
+logo_path = os.path.join(os.path.dirname(__file__), "logo.png")
 
 # -----------------------------------
 # Funciones auxiliares
@@ -145,26 +138,51 @@ def clasificar_potencial(ticket: float) -> str:
         return "Potencial comercial moderado"
     return "Potencial comercial acotado"
 
-def descripcion_categoria(grupo: str) -> str:
+def descripcion_macrocategoria(grupo: str) -> str:
     descripciones = {
-        "Alimentos": "Productos de consumo frecuente y alta recurrencia.",
-        "Cuidado Personal": "Productos de higiene, bienestar y cuidado diario.",
-        "Recreación": "Consumo vinculado a ocio, entretenimiento y bienestar.",
-        "Automotor": "Compras más específicas, con tickets unitarios relevantes.",
-        "Hogar": "Artículos funcionales y de uso cotidiano.",
-        "Tecnología": "Productos de valor percibido mayor y potencial de ticket superior.",
-        "Moda": "Consumo asociado a preferencia, estilo y estacionalidad.",
-        "Industria y construcción": "Productos específicos asociados a necesidades puntuales.",
-        "Marketplace": "Categoría amplia y heterogénea dentro del catálogo.",
-        "Cultura y entretenimiento": "Consumo asociado a experiencias y ocio."
+        "Alimentos": "Macrocategoría de consumo frecuente y alta recurrencia.",
+        "Cuidado Personal": "Macrocategoría asociada a higiene, bienestar y consumo diario.",
+        "Recreación": "Macrocategoría vinculada a ocio, familia, mascotas y estilo de vida.",
+        "Automotor": "Macrocategoría de compras más específicas, con tickets unitarios relevantes.",
+        "Hogar": "Macrocategoría de artículos funcionales y de uso cotidiano.",
+        "Tecnología": "Macrocategoría con productos de valor percibido mayor y potencial de ticket superior.",
+        "Moda": "Macrocategoría asociada a preferencia, estilo y estacionalidad.",
+        "Industria y construcción": "Macrocategoría con productos más específicos y uso puntual.",
+        "Marketplace": "Macrocategoría amplia y heterogénea dentro del catálogo.",
+        "Cultura y entretenimiento": "Macrocategoría asociada a experiencias y ocio.",
+        "other": "Macrocategoría residual con menor volumen histórico."
     }
-    return descripciones.get(grupo, "Categoría con comportamiento específico dentro del catálogo.")
+    return descripciones.get(grupo, "Macrocategoría con comportamiento específico dentro del catálogo.")
+
+def insight_negocio(grupo_origen, grupo_recomendado):
+    return (
+        f"Los clientes que compran en <b>{grupo_origen}</b> también muestran afinidad con <b>{grupo_recomendado}</b>, "
+        "lo que sugiere una oportunidad concreta para activar cross-selling y aumentar el ticket promedio."
+    )
+
+def acciones_comerciales():
+    return [
+        ("🛒 Bundle sugerido", "Combinar macrocategorías relacionadas para aumentar valor por compra."),
+        ("🎯 Sugerencia en checkout", "Mostrar oportunidades cruzadas durante la compra."),
+        ("📢 Campaña segmentada", "Activar promociones dirigidas según afinidad detectada.")
+    ]
+
+def fallback_popularidad(df, top_n=5):
+    return (
+        df.groupby(col_reco)[col_freq]
+        .sum()
+        .sort_values(ascending=False)
+        .head(top_n)
+        .reset_index()
+        .rename(columns={
+            col_reco: "Macrocategoría sugerida",
+            col_freq: "Compras conjuntas"
+        })
+    )
 
 # -----------------------------------
-# Logo + Header
+# Header
 # -----------------------------------
-logo_path = os.path.join(os.path.dirname(__file__), "logo.png")
-
 col_logo, col_title = st.columns([1, 7])
 
 with col_logo:
@@ -177,7 +195,7 @@ with col_title:
         unsafe_allow_html=True
     )
     st.markdown(
-        '<div class="subtitle">Identificación de oportunidades comerciales entre categorías para aumentar ventas y ticket promedio.</div>',
+        '<div class="subtitle">Identificación de oportunidades comerciales entre macrocategorías para aumentar ticket promedio y potenciar ventas cruzadas.</div>',
         unsafe_allow_html=True
     )
 
@@ -189,7 +207,7 @@ st.markdown("---")
 st.sidebar.header("Configuración del análisis")
 
 grupos = sorted(recomendaciones[col_origen].dropna().unique())
-grupo_seleccionado = st.sidebar.selectbox("Seleccionar categoría analizada", grupos)
+grupo_seleccionado = st.sidebar.selectbox("Seleccionar macrocategoría analizada", grupos)
 top_k = st.sidebar.slider("Cantidad de oportunidades a visualizar", 3, 10, 5)
 
 # -----------------------------------
@@ -231,10 +249,10 @@ st.markdown('<div class="section-title">Resumen ejecutivo</div>', unsafe_allow_h
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    st.metric("Categoría analizada", grupo_seleccionado)
+    st.metric("Macrocategoría analizada", grupo_seleccionado)
 
 with col2:
-    st.metric("Mayor oportunidad detectada", mejor)
+    st.metric("Principal categoría asociada", mejor)
 
 with col3:
     st.metric("Nivel de oportunidad", nivel_oportunidad)
@@ -242,48 +260,53 @@ with col3:
 st.markdown("---")
 
 # -----------------------------------
-# Insight principal
+# Relación comercial detectada
 # -----------------------------------
 st.markdown("### Relación comercial detectada")
 st.markdown(
     f"""
     <div class="info-box">
-    La categoría <b>{grupo_seleccionado}</b> concentra clientes con afinidad hacia <b>{mejor}</b>, 
-    lo que sugiere una oportunidad concreta para activar estrategias de venta cruzada.
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
-st.markdown(
-    f"""
-    <div class="card">
-        <h4>Oportunidad principal sugerida</h4>
-        <p>Para la categoría <b>{grupo_seleccionado}</b>, la principal oportunidad detectada es <b>{mejor}</b>.</p>
-        <p><b>Nivel de oportunidad:</b> {nivel_oportunidad}</p>
-        <p><b>Compras conjuntas observadas:</b> {mejor_freq}</p>
-        <p><b>Impacto económico estimado:</b> ${mejor_ticket:,.2f}</p>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
-st.markdown(
-    f"""
-    <div class="warn-box">
-    <b>{potencial}</b>
+    {descripcion_macrocategoria(grupo_seleccionado)}
     </div>
     """,
     unsafe_allow_html=True
 )
 
 # -----------------------------------
-# Oportunidades principales
+# Oportunidad principal sugerida
 # -----------------------------------
-st.markdown('<div class="section-title">Principales oportunidades sugeridas</div>', unsafe_allow_html=True)
+if not df_grupo.empty:
+    st.markdown(
+        f"""
+        <div class="big-card">
+            <div class="section-title" style="color:#102A43;">Oportunidad principal sugerida</div>
+            <p>Para la macrocategoría <b>{grupo_seleccionado}</b>, la principal categoría asociada es <b>{mejor}</b>.</p>
+            <p><b>Nivel de oportunidad:</b> {nivel_oportunidad}</p>
+            <p><b>Compras conjuntas observadas:</b> {mejor_freq}</p>
+            <p><b>Impacto económico estimado:</b> ${mejor_ticket:,.2f}</p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        f"""
+        <div class="warn-box">
+        <b>{potencial}</b>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+else:
+    st.warning("No se encontraron oportunidades para esta macrocategoría.")
+
+# -----------------------------------
+# Principales oportunidades sugeridas
+# -----------------------------------
+st.markdown('<div class="section-title">Principales categorías asociadas</div>', unsafe_allow_html=True)
 
 if df_grupo.empty:
-    st.warning("No se encontraron oportunidades para esta categoría.")
+    st.warning("No se encontraron oportunidades para esta macrocategoría.")
 else:
     card_cols = st.columns(min(3, len(df_grupo)))
 
@@ -302,116 +325,105 @@ else:
             )
 
 # -----------------------------------
-# Detalle + Aplicación comercial
+# Aplicación comercial + detalle
 # -----------------------------------
-left, right = st.columns([1.35, 1])
+left, right = st.columns([1.4, 0.8])
 
 with left:
-    st.markdown('<div class="section-title">Detalle</div>', unsafe_allow_html=True)
-    st.caption("Vista detallada para análisis y validación de las oportunidades detectadas.")
+    st.markdown('<div class="section-title">Aplicación comercial</div>', unsafe_allow_html=True)
+    acciones = acciones_comerciales()
+    cols_acc = st.columns(3)
+
+    for col, (titulo, desc) in zip(cols_acc, acciones):
+        with col:
+            st.markdown(
+                f"""
+                <div class="card">
+                    <h4>{titulo}</h4>
+                    <p>{desc}</p>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+with right:
+    st.markdown('<div class="section-title">Detalle de asociaciones</div>', unsafe_allow_html=True)
+    st.caption("Vista de respaldo para análisis técnico.")
 
     if not df_grupo.empty:
         tabla = df_grupo[[col_reco, col_score, col_freq, col_ticket]].rename(columns={
-            col_reco: "Categoría sugerida",
-            col_score: "Nivel de oportunidad",
+            col_reco: "Macrocategoría sugerida",
+            col_score: "Fuerza de relación",
             col_freq: "Compras conjuntas",
             col_ticket: "Impacto económico ($)"
         })
 
         tabla["Impacto económico ($)"] = tabla["Impacto económico ($)"].apply(lambda x: f"${x:,.2f}")
-        tabla["Nivel de oportunidad"] = tabla["Nivel de oportunidad"].apply(lambda x: f"{x:.4f}")
+        tabla["Fuerza de relación"] = tabla["Fuerza de relación"].apply(lambda x: f"{x:.4f}")
 
-        with st.expander("Ver detalle completo"):
-            st.dataframe(tabla, use_container_width=True)
-
-with right:
-    st.markdown('<div class="section-title">Aplicación comercial</div>', unsafe_allow_html=True)
-
-    col_a, col_b, col_c = st.columns(3)
-
-    with col_a:
-        st.markdown(
-            """
-            <div class="action-card">
-                <h4>🛒 Bundle recomendado</h4>
-                <p>Probar combinaciones comerciales entre categorías relacionadas para aumentar valor por compra.</p>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-    with col_b:
-        st.markdown(
-            """
-            <div class="action-card">
-                <h4>🎯 Sugerencia en carrito</h4>
-                <p>Usar recomendaciones cruzadas durante la navegación o el checkout para impulsar conversión.</p>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-    with col_c:
-        st.markdown(
-            """
-            <div class="action-card">
-                <h4>📢 Campaña segmentada</h4>
-                <p>Activar promociones dirigidas según afinidad detectada entre categorías.</p>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+        with st.expander("Ver detalle técnico (opcional)", expanded=False):
+            st.dataframe(tabla, use_container_width=True, height=220)
 
 # -----------------------------------
-# Explicación de negocio
+# Por qué esta relación importa
 # -----------------------------------
-st.markdown("### ¿Por qué esta relación importa?")
-st.write(
-    f"""
-Los clientes que compran en **{grupo_seleccionado}** también tienden a comprar en **{mejor}**, 
-lo que representa una oportunidad directa para aumentar el ticket promedio mediante estrategias de cross-selling.
+st.markdown("### ¿Por qué esta asociación importa?")
 
-Esta recomendación se apoya en una recurrencia observada de **{mejor_freq} compras conjuntas** y en un 
-impacto económico estimado de **${mejor_ticket:,.2f}** para la categoría sugerida.
-"""
-)
+if not df_grupo.empty:
+    st.markdown(
+        f"""
+        <div class="insight-box">
+        {insight_negocio(grupo_seleccionado, mejor)}
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
-if score_promedio >= 0.13:
-    st.success("La oportunidad detectada muestra una afinidad comercial alta dentro del catálogo.")
-elif score_promedio >= 0.08:
-    st.info("La oportunidad detectada presenta una afinidad comercial moderada y puede activarse con foco táctico.")
-else:
-    st.warning("La oportunidad detectada es más limitada y conviene validarla antes de una activación amplia.")
+    if score_promedio >= 0.13:
+        st.success("La oportunidad detectada muestra una afinidad comercial alta dentro del catálogo.")
+    elif score_promedio >= 0.08:
+        st.info("La oportunidad detectada presenta una afinidad comercial moderada y puede activarse tácticamente.")
+    else:
+        st.warning("La oportunidad detectada es más limitada y conviene validarla antes de una activación amplia.")
 
-st.markdown("### Nivel de oportunidad")
-st.progress(min(mejor_score / 0.20, 1.0))
+    st.markdown("### Nivel de oportunidad")
+    st.progress(min(mejor_score / 0.20, 1.0))
 
-st.markdown("---")
+# -----------------------------------
+# Fallback
+# -----------------------------------
+if df_grupo.empty:
+    st.markdown("### Alternativa por volumen histórico")
+    fallback = fallback_popularidad(recomendaciones, top_n=5)
+    st.dataframe(fallback, use_container_width=True)
 
 # -----------------------------------
 # Aporte y próximos pasos
 # -----------------------------------
+st.markdown("---")
 colA, colB = st.columns(2)
 
 with colA:
     st.markdown("## ¿Qué aporta esta herramienta?")
-    st.markdown("""
-Permite transformar datos históricos en oportunidades concretas de cross-selling, ayudando a:
-
-- identificar combinaciones con mayor potencial comercial
-- priorizar acciones para aumentar el ticket promedio
-- sostener decisiones de recomendación con evidencia del comportamiento de compra
-""")
+    st.markdown(
+        """
+        Permite transformar datos históricos en oportunidades concretas de cross-selling, ayudando a:
+        - identificar combinaciones con mayor potencial comercial
+        - priorizar acciones para aumentar el ticket promedio
+        - sostener decisiones con evidencia del comportamiento de compra
+        """
+    )
 
 with colB:
     st.markdown("## Próximos pasos")
-    st.markdown("""
-Como evolución del proyecto, el sistema puede avanzar hacia:
-
-- recomendaciones más granulares
-- mayor nivel de personalización
-- integración con otras capas de activación comercial
-""")
+    st.markdown(
+        """
+        Como evolución del proyecto, el sistema puede avanzar hacia:
+        - recomendaciones más granulares
+        - mayor nivel de personalización
+        - integración con otras capas de activación comercial
+        """
+    )
 
 st.markdown("---")
-st.caption("Proyecto Webshop · Sprint 2")
+st.caption("Proyecto Webshop · Sprint 2 · CSCM Consulting Group")
