@@ -1,4 +1,4 @@
-# 🔍 Cross-Selling Recommendation System
+# Cross-Selling Recommendation System
 
 Proyecto de ciencia de datos enfocado en el desarrollo de un sistema de recomendación para e-commerce, orientado a identificar relaciones de complementariedad entre categorías de productos y potenciar estrategias de cross-selling.
 
