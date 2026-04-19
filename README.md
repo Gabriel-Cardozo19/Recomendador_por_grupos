@@ -1,10 +1,10 @@
-# Cross-Selling Recommendation System
+# Sistema de Recomendacion por Venta Cruzada
 
 Proyecto de ciencia de datos enfocado en el desarrollo de un sistema de recomendación para e-commerce, orientado a identificar relaciones de complementariedad entre categorías de productos y potenciar estrategias de cross-selling.
 
 ---
 
-## 🚀 Live Demo
+## Live Demo
 
 👉 App interactiva: https://cross-selling-opportunities-recommender.streamlit.app/
 👉 Dashboard (Power BI): https://app.powerbi.com/view?r=eyJrIjoiOTBhZDE5YjMtNjhhMy00NTM3LThmYmMtNGY1YTUzZWZlNDBlIiwidCI6IjU1MDNhYWMyLTdhMTUtNDZhZi1iNTIwLTJhNjc1YWQxZGYxNiIsImMiOjR9
